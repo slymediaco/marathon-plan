@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sam's Marathon Training Calendar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f0f0f5;
+    --border: #d1d1d6;
+    --text: #1c1c1e;
+    --muted: #8e8e93;
+    --run: #1a8a3c;
+    --run-dim: #d4f0de;
+    --lift: #1060c9;
+    --lift-dim: #dce8fb;
+    --rest: #6030b8;
+    --rest-dim: #ede8fb;
+    --stretch: #b84800;
+    --stretch-dim: #fce9da;
+    --race: #c0001e;
+    --race-dim: #fce0e4;
+    --taper: #8a6800;
+    --taper-dim: #fef3c7;
+    --mono: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  header {
+    padding: 24px 28px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+    transition: transform 0.25s ease;
+  }
+
+  header.hide {
+    transform: translateY(-100%);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-top: 3px;
+  }
+
+  .countdown {
+    background: var(--race-dim);
+    border: 1px solid var(--race);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--race);
+    text-align: center;
+  }
+
+  .countdown span {
+    font-size: 22px;
+    font-weight: 500;
+    display: block;
+  }
+
+  nav {
+    display: flex;
+    gap: 8px;
+    padding: 12px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  nav::-webkit-scrollbar { display: none; }
+
+  .month-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .month-btn.active, .month-btn:hover {
+    background: #1c1c1e;
+    color: #ffffff;
+    border-color: #1c1c1e;
+  }
+
+  .legend {
+    display: flex;
+    gap: 14px;
+    padding: 10px 28px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .legend::-webkit-scrollbar { display: none; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    min-height: calc(100vh - 160px);
+  }
+
+  .calendar-grid {
+    padding: 20px 28px;
+    overflow-y: auto;
+  }
+
+  .month-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    margin-top: 24px;
+  }
+
+  .month-label:first-child { margin-top: 0; }
+
+  .week-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .week-day-label {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    padding: 4px;
+  }
+
+  .week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  .day-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 6px 6px;
+    min-height: 80px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .day-cell:hover {
+    border-color: #1c1c1e;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .day-cell.selected {
+    border-color: #1c1c1e;
+    background: var(--surface2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  }
+
+  .day-cell.empty {
+    background: transparent;
+    border-color: transparent;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .day-cell.today {
+    border-color: #007aff;
+  }
+
+  .day-cell.race-day {
+    border-color: var(--race);
+    background: var(--race-dim);
+  }
+
+  .day-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+
+  .day-cell.today .day-num {
+    color: #007aff;
+    font-weight: 600;
+  }
+
+  .day-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .tag {
+    font-size: 9px;
+    font-family: var(--mono);
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tag-run { background: var(--run-dim); color: var(--run); }
+  .tag-lift { background: var(--lift-dim); color: var(--lift); }
+  .tag-rest { background: var(--rest-dim); color: var(--rest); }
+  .tag-stretch { background: var(--stretch-dim); color: var(--stretch); }
+  .tag-race { background: var(--race-dim); color: var(--race); }
+
+  .detail-panel {
+    border-left: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+    position: sticky;
+    top: 160px;
+    height: calc(100vh - 160px);
+  }
+
+  .detail-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    text-align: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detail-date {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .detail-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+
+  .detail-section {
+    margin-bottom: 16px;
+  }
+
+  .detail-section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-block {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+
+  .detail-block-title {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .detail-block-body {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .detail-block-body li {
+    margin-left: 14px;
+    margin-bottom: 2px;
+  }
+
+  .pill {
+    font-size: 9px;
+    font-family: var(--mono);
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+
+  .pill-run { background: var(--run-dim); color: var(--run); }
+  .pill-lift { background: var(--lift-dim); color: var(--lift); }
+  .pill-rest { background: var(--rest-dim); color: var(--rest); }
+  .pill-race { background: var(--race-dim); color: var(--race); }
+
+  .phase-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+
+  .km-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .km-fill {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--run);
+  }
+
+  .week-info {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    padding: 4px 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    margin-bottom: 12px;
+    display: inline-block;
+  }
+
+  @media (max-width: 700px) {
+    .main { grid-template-columns: 1fr; }
+    .detail-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 60vh; top: auto; border-left: none; border-top: 1px solid var(--border); z-index: 200; background: #ffffff; display: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.12); border-radius: 16px 16px 0 0; }
+    .detail-panel.open { display: block; }
+    .close-btn { display: flex; }
+    .header-top { flex-direction: row; align-items: center; }
+    h1 { font-size: 16px; }
+    .subtitle { font-size: 10px; }
+    .countdown { padding: 6px 12px; }
+    .countdown span { font-size: 18px; }
+  }
+
+  .close-btn {
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .phase-bar {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    padding: 0 28px 10px;
+  }
+
+  .phase-segment {
+    height: 4px;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Marathon Training Calendar</h1>
+      <div class="subtitle">Apr 29 – Oct 18, 2026 · Toronto Waterfront · Target: 4:15–4:30</div>
+    </div>
+    <div class="countdown">
+      <span id="countdown-num">171</span>
+      days to race
+    </div>
+  </div>
+  <nav id="month-nav"></nav>
+</header>
+
+<div class="phase-bar">
+  <div class="phase-segment" style="background:#1D9E75;" title="Base Rebuild"></div>
+  <div class="phase-segment" style="background:#378ADD;" title="Aerobic Build"></div>
+  <div class="phase-segment" style="background:#BA7517;" title="Endurance"></div>
+  <div class="phase-segment" style="background:#7F77DD;" title="Peak"></div>
+  <div class="phase-segment" style="background:#639922;" title="Taper"></div>
+  <div class="phase-segment" style="background:#E24B4A;" title="Race"></div>
+</div>
+
+<div style="padding: 0 28px 8px; display:flex; gap:16px; flex-wrap:wrap;">
+  <span style="font-size:10px;font-family:var(--mono);color:#1D9E75;">● Base Rebuild (Wk 1–5)</span>
+  <span style="font-size:10px;font-family:var(--mono);color:#378ADD;">● Aerobic Build (Wk 6–10)</span>
+  <span style="font-size:10px;font-family:var(--mono);color:#BA7517;">● Endurance (Wk 11–15)</span>
+  <span style="font-size:10px;font-family:var(--mono);color:#7F77DD;">● Peak (Wk 16–20)</span>
+  <span style="font-size:10px;font-family:var(--mono);color:#639922;">● Taper (Wk 21–23)</span>
+  <span style="font-size:10px;font-family:var(--mono);color:#E24B4A;">● Race Day</span>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--run)"></div>Run</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--lift)"></div>Lift</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--rest)"></div>Rest/Recovery</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--stretch)"></div>Stretch (daily)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--race)"></div>Race</div>
+</div>
+
+<div class="main">
+  <div class="calendar-grid" id="cal"></div>
+  <div class="detail-panel" id="detail-panel">
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+    <div id="detail-content">
+      <div class="detail-empty">
+        <div style="font-size:24px;">📅</div>
+        <div>Click a day to see<br>your full schedule</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const START = new Date(2026, 3, 29); // April 29
+const RACE = new Date(2026, 9, 18);  // October 18
+
+// Training week starts Monday April 27 (so April 29 = Wed of week 1)
+// We'll treat the week number as weeks since start
+function getTrainingWeek(date) {
+  const diff = Math.floor((date - START) / (7 * 24 * 3600 * 1000));
+  return Math.floor(diff) + 1;
+}
+
+function getPhase(week) {
+  if (week <= 5) return { name: 'Base Rebuild', color: '#1D9E75', short: 'base' };
+  if (week <= 10) return { name: 'Aerobic Build', color: '#378ADD', short: 'aerobic' };
+  if (week <= 15) return { name: 'Endurance', color: '#BA7517', short: 'endurance' };
+  if (week <= 20) return { name: 'Peak Training', color: '#7F77DD', short: 'peak' };
+  if (week <= 23) return { name: 'Taper', color: '#639922', short: 'taper' };
+  return { name: 'Race Week', color: '#E24B4A', short: 'race' };
+}
+
+// Day of week: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+// Lifting schedule: Push=Mon, Pull=Tue, Legs=Wed, Push=Thu, Pull=Fri, Legs=Sat, Rest=Sun
+function getLiftType(dow) {
+  const lifts = {1:'Push', 2:'Pull', 3:'Legs', 4:'Push', 5:'Pull', 6:'Legs', 0:'Rest'};
+  return lifts[dow];
+}
+
+// Run schedule per week and day-of-week (0=Sun,1=Mon,...,6=Sat)
+// Returns run info or null
+function getRunInfo(date, week) {
+  const dow = date.getDay(); // 0=Sun
+  const phase = getPhase(week);
+
+  // Cutback weeks: 4, 8, 12, 15, 18
+  const cutback = [4, 8, 12, 15, 18].includes(week);
+  // Race week
+  if (week >= 24) {
+    if (date.getTime() === RACE.getTime()) return { type: 'RACE', label: 'RACE DAY', km: 42.2 };
+    if (dow === 2) return { type: 'easy', label: 'Easy 5 km', km: 5 };
+    if (dow === 4) return { type: 'easy', label: 'Easy 3 km + strides', km: 3 };
+    return null;
+  }
+
+  // Week-specific long run distances
+  const longKm = [0,8,10,12,10,14, 16,18,14,20,22, 24,18,26,28,22, 30,0,24,32,29, 22,16,10];
+  const longRun = week <= 23 ? longKm[week] : 0;
+
+  // Run days depend on week
+  let runDays = {};
+
+  if (week <= 5) {
+    // Phase 1: 3-4 runs. Mon/Wed/Sat easy, Thu easy (wk3+)
+    if (dow === 1) runDays = { type: 'easy', label: `Easy run ${week <= 2 ? 5 : 6} km`, km: week <= 2 ? 5 : 6 };
+    if (dow === 3) runDays = { type: 'easy', label: `Easy run ${week <= 2 ? 5 : 6} km`, km: week <= 2 ? 5 : 6 };
+    if (dow === 4 && week >= 3) runDays = { type: 'easy', label: 'Easy run 5 km', km: 5 };
+    if (dow === 0) runDays = { type: 'long', label: `Long run ${longRun} km`, km: longRun };
+    if (week === 5 && dow === 5) runDays = { type: 'tempo', label: 'Tempo 4 km', km: 7 }; // tempo intro
+  } else if (week <= 10) {
+    // Phase 2: 4-5 runs
+    if (dow === 1) runDays = { type: 'easy', label: 'Easy run 7 km', km: 7 };
+    if (dow === 2 && week >= 9) runDays = { type: 'intervals', label: 'Intervals 4×1 km', km: 8 };
+    if (dow === 3) {
+      if (week === 8 || cutback) runDays = { type: 'easy', label: 'Easy run 6 km', km: 6 };
+      else runDays = { type: 'easy', label: 'Easy run 8 km', km: 8 };
+    }
+    if (dow === 5) {
+      const tempoKm = [0,0,0,0,0,0, 5,6,0,0,8];
+      runDays = { type: 'tempo', label: `Tempo ${tempoKm[week] || 5} km`, km: (tempoKm[week] || 5) + 3 };
+    }
+    if (dow === 0) runDays = { type: 'long', label: `Long run ${longRun} km`, km: longRun };
+  } else if (week <= 15) {
+    // Phase 3: 5 runs
+    if (dow === 1) {
+      const mpKm = [0,0,0,0,0,0,0,0,0,0,0, 10,0,12,0,0];
+      runDays = mpKm[week] ? { type: 'mp', label: `Marathon pace ${mpKm[week]} km`, km: mpKm[week]+4 } : { type: 'easy', label: 'Easy run 8 km', km: 8 };
+    }
+    if (dow === 2 && week !== 12 && week !== 15) runDays = { type: 'intervals', label: `Intervals ${week >= 14 ? '6' : '4'}×1 km`, km: 9 };
+    if (dow === 3) runDays = { type: 'easy', label: 'Easy run 10 km', km: 10 };
+    if (dow === 5 && !cutback) runDays = { type: 'tempo', label: 'Tempo 8 km', km: 11 };
+    if (dow === 0) runDays = { type: 'long', label: `Long run ${longRun} km`, km: longRun };
+  } else if (week <= 20) {
+    // Phase 4: 5 runs, peak
+    if (week === 17 && dow === 0) return { type: 'race', label: 'Half Marathon tune-up', km: 21.1 };
+    if (dow === 1) {
+      const mpKm = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 14,0,0,16,12];
+      runDays = mpKm[week] ? { type: 'mp', label: `Marathon pace ${mpKm[week]} km`, km: mpKm[week]+5 } : { type: 'easy', label: 'Easy run 10 km', km: 10 };
+    }
+    if (dow === 2 && !cutback && week !== 17) runDays = { type: 'intervals', label: 'Intervals 6×1 km', km: 10 };
+    if (dow === 3) runDays = { type: 'easy', label: 'Easy run 10 km', km: 10 };
+    if (dow === 5 && !cutback && week !== 17) runDays = { type: 'tempo', label: 'Tempo 10 km', km: 13 };
+    if (dow === 0 && week !== 17) runDays = { type: 'long', label: `Long run ${longRun} km`, km: longRun };
+  } else {
+    // Taper
+    if (dow === 1) runDays = { type: 'easy', label: 'Easy run 8 km', km: 8 };
+    if (dow === 3) runDays = { type: 'mp', label: 'MP effort 6 km', km: 9 };
+    if (dow === 5) runDays = { type: 'easy', label: 'Easy run 6 km + strides', km: 7 };
+    if (dow === 0) runDays = { type: 'long', label: `Long run ${longRun} km`, km: longRun };
+  }
+
+  return Object.keys(runDays).length ? runDays : null;
+}
+
+function getDayData(date) {
+  if (date < START || date > RACE) return null;
+  const week = getTrainingWeek(date);
+  const dow = date.getDay();
+  const lift = getLiftType(dow);
+  const run = getRunInfo(date, week);
+  const isRaceDay = date.getTime() === RACE.getTime();
+  const phase = getPhase(week);
+  const cutback = [4, 8, 12, 15, 18].includes(week);
+
+  return { week, dow, lift, run, phase, cutback, isRaceDay };
+}
+
+function formatDate(d) {
+  return d.toLocaleDateString('en-CA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function getRunColor(type) {
+  const colors = { easy: '#4ade80', long: '#4ade80', tempo: '#f97316', intervals: '#facc15', mp: '#a78bfa', RACE: '#f43f5e', race: '#f43f5e' };
+  return colors[type] || '#4ade80';
+}
+
+const NUTRITION = {
+  preRun: [
+    'Banana or oatmeal (30–60 min before)',
+    'Toast with peanut butter',
+    '500mL water on waking'
+  ],
+  duringShort: ['Water sips if needed', 'No fuel needed under 60 min'],
+  duringLong: ['Dates every 30 min', 'Fruit gummies every 30 min', 'Gel every 30 min if 2h+', '100–200mL water every 15 min'],
+  postRun: ['Carbs + protein within 30 min (3:1 ratio)', 'Pasta + chicken, salmon + rice, or yogurt + granola', '1L water with electrolytes'],
+  daily: ['3L water daily goal', 'Electrolytes on long run days'],
+};
+
+const STRETCHING = {
+  daily: ['Couch stretch 2 min/side ⭐', '90/90 hip stretch 2 min/side', 'Standing hip flexor lunge 90 sec/side', 'Standing calf stretch 30 sec/side', 'Standing quad stretch 30 sec/side', 'Seated butterfly 30 sec', 'Seated hamstring 30 sec/side', 'Figure 4 glute 30 sec/side', 'Clams 15 each side', 'Glute bridge holds 3×10'],
+  preRun: ['Leg swings front/back 15 each', 'Leg swings side/side 15 each', 'Toy soldiers 10 each', 'High knees 30 sec', 'Butt kicks 30 sec', 'Lunges with rotation 10 each', 'Squats 15 reps', 'Toe hops 30 sec', 'Calf raises 15 reps', 'Ankle circles 15 each', 'Gate openers 15 each', 'Gate closers 15 each', 'Glute bridges 15 reps', 'Ab crunches 15 reps'],
+  postRun: ['Slow jog 5 min', 'Full daily stretching routine', 'Foam roll: hamstrings, calves, glutes, quads, IT band'],
+  foam: ['Hamstrings', 'Calves', 'Glutes', 'Quads', 'IT band'],
+};
+
+const LIFT_DETAILS = {
+  Push: ['Bench press 4×8', 'Incline DB press 3×10', 'Shoulder press 3×10', 'Lateral raises 3×15', 'Tricep pushdowns 3×12', 'Chest flies 3×12'],
+  Pull: ['Deadlift 4×5 (reduce weight on run weeks)', 'Pull-ups 4×8', 'Barbell rows 3×10', 'Face pulls 3×15', 'Bicep curls 3×12', 'Rear delt flies 3×15'],
+  Legs: ['Squat 4×8 (keep moderate — protect hip flexors)', 'Romanian deadlift 3×10', 'Leg press 3×12', 'Walking lunges 3×10 each', 'Leg curls 3×12', 'Hip thrust 3×12 ⭐ key for runners', 'Calf raises 4×15'],
+  Rest: [],
+};
+
+function renderDetail(date) {
+  const data = getDayData(date);
+  if (!data) return '<div class="detail-empty"><div>Outside training window</div></div>';
+
+  const { week, dow, lift, run, phase, cutback, isRaceDay } = data;
+  let html = '';
+
+  html += `<div class="detail-date">${formatDate(date)}</div>`;
+
+  if (isRaceDay) {
+    html += `<div class="detail-title">🏁 RACE DAY — Toronto Waterfront Marathon</div>`;
+    html += `<div class="detail-block" style="border-left: 3px solid var(--race);">
+      <div class="detail-block-title"><span class="pill pill-race">42.2 km</span> Target: 4:15–4:30</div>
+      <div class="detail-block-body">
+        <ul>
+          <li>Wake up 3.5h before gun time</li>
+          <li>Pre-race: oatmeal or banana 2–3h before, 500mL water with electrolytes</li>
+          <li>Pace strategy: first 10 km easy (6:30/km), lock in at 6:10/km km 10–32, push if feeling good</li>
+          <li>Gel every 40–45 min starting at km 14</li>
+          <li>Walk max 10 sec at water stations</li>
+          <li>Do full hip flexor warmup 45 min before start</li>
+        </ul>
+      </div>
+    </div>`;
+    return html;
+  }
+
+  html += `<div class="detail-title">${cutback ? '⬇️ Cutback week — ' : ''}Week ${week}</div>`;
+  html += `<div class="phase-badge" style="background:${phase.color}22;color:${phase.color};border:1px solid ${phase.color}44;">${phase.name}</div>`;
+  if (cutback) html += `<div class="week-info">Cutback week — reduce effort, recover, adapt</div><br>`;
+
+  // Morning routine
+  html += `<div class="detail-section">
+    <div class="detail-section-title">☀️ Morning</div>
+    <div class="detail-block">
+      <div class="detail-block-title">Wake-up hydration</div>
+      <div class="detail-block-body">500mL plain water immediately on waking</div>
+    </div>
+    <div class="detail-block">
+      <div class="detail-block-title">Daily hip flexor protocol (15 min) ⭐</div>
+      <div class="detail-block-body"><ul>${STRETCHING.daily.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    </div>
+  </div>`;
+
+  // Run section
+  if (run) {
+    const isLong = run.km >= 18;
+    const rcol = getRunColor(run.type);
+    html += `<div class="detail-section">
+      <div class="detail-section-title">🏃 Run</div>
+      <div class="detail-block" style="border-left: 3px solid ${rcol};">
+        <div class="detail-block-title"><span style="color:${rcol}">${run.label}</span> <span style="font-size:10px;color:var(--muted);font-family:var(--mono);">${run.km} km</span></div>
+        <div class="detail-block-body">
+          ${run.type === 'easy' ? '<b>Pace:</b> 6:45–7:30/km — conversational, could hold a full conversation' : ''}
+          ${run.type === 'long' ? '<b>Pace:</b> 7:00–7:30/km — very comfortable, no ego. Walk breaks totally fine early on.' : ''}
+          ${run.type === 'tempo' ? '<b>Pace:</b> 5:30–5:45/km — comfortably hard, 7/10 effort' : ''}
+          ${run.type === 'intervals' ? '<b>Pace:</b> 5:00–5:15/km per interval — hard effort with 90 sec jog recovery' : ''}
+          ${run.type === 'mp' ? '<b>Pace:</b> 6:02–6:24/km — your goal marathon pace, should feel sustainable' : ''}
+          ${run.type === 'race' ? '<b>Half marathon tune-up race</b> — treat as a long training run, not all out' : ''}
+        </div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-block-title">Pre-run warm-up (10 min)</div>
+        <div class="detail-block-body"><ul>${STRETCHING.preRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-block-title">Pre-run nutrition</div>
+        <div class="detail-block-body"><ul>${NUTRITION.preRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>
+      ${isLong ? `<div class="detail-block">
+        <div class="detail-block-title">During run (long run fuel)</div>
+        <div class="detail-block-body"><ul>${NUTRITION.duringLong.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>` : `<div class="detail-block">
+        <div class="detail-block-title">During run</div>
+        <div class="detail-block-body"><ul>${NUTRITION.duringShort.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>`}
+      <div class="detail-block">
+        <div class="detail-block-title">Post-run cooldown (10 min)</div>
+        <div class="detail-block-body"><ul>${STRETCHING.postRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-block-title">Post-run nutrition (within 30 min)</div>
+        <div class="detail-block-body"><ul>${NUTRITION.postRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>
+    </div>`;
+  }
+
+  // Lift section
+  html += `<div class="detail-section">
+    <div class="detail-section-title">💪 Strength Training</div>`;
+
+  if (lift === 'Rest') {
+    html += `<div class="detail-block">
+      <div class="detail-block-title"><span class="pill pill-rest">Rest</span> Full rest day</div>
+      <div class="detail-block-body">Light walk is fine. Focus on extra sleep and nutrition. No gym.</div>
+    </div>`;
+  } else {
+    const exercises = LIFT_DETAILS[lift];
+    html += `<div class="detail-block" style="border-left: 3px solid var(--lift);">
+      <div class="detail-block-title"><span class="pill pill-lift">${lift}</span> ${lift} day</div>
+      <div class="detail-block-body">
+        ${run ? '<b>Note:</b> You have a run today — do your run FIRST, lift after (or separate by 4+ hours)<br>' : ''}
+        <ul>${exercises.map(e=>`<li>${e}</li>`).join('')}</ul>
+      </div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Evening stretch
+  html += `<div class="detail-section">
+    <div class="detail-section-title">🌙 Evening</div>
+    <div class="detail-block">
+      <div class="detail-block-title">Evening hip flexor stretch (10 min)</div>
+      <div class="detail-block-body">Repeat couch stretch + 90/90 hip stretch. Critical for recovery. Do this every night even if tired.</div>
+    </div>
+  </div>`;
+
+  // Daily nutrition
+  html += `<div class="detail-section">
+    <div class="detail-section-title">💧 Hydration & Nutrition</div>
+    <div class="detail-block">
+      <div class="detail-block-title">Daily targets</div>
+      <div class="detail-block-body"><ul>${NUTRITION.daily.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+    </div>
+  </div>`;
+
+  return html;
+}
+
+// Build calendar
+function buildCalendar() {
+  const cal = document.getElementById('cal');
+  const nav = document.getElementById('month-nav');
+
+  const months = [];
+  let cur = new Date(2026, 3, 1); // April
+  while (cur <= new Date(2026, 9, 31)) {
+    months.push(new Date(cur));
+    cur.setMonth(cur.getMonth() + 1);
+  }
+
+  months.forEach((monthStart, mi) => {
+    const monthName = monthStart.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' });
+    const monthId = `month-${mi}`;
+
+    // Nav button
+    const btn = document.createElement('button');
+    btn.className = 'month-btn' + (mi === 0 ? ' active' : '');
+    btn.textContent = monthStart.toLocaleDateString('en-CA', { month: 'short' });
+    btn.onclick = () => {
+      document.getElementById(monthId).scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    nav.appendChild(btn);
+
+    // Month section
+    const section = document.createElement('div');
+    section.id = monthId;
+
+    const label = document.createElement('div');
+    label.className = 'month-label';
+    label.textContent = monthName;
+    section.appendChild(label);
+
+    const weekHeader = document.createElement('div');
+    weekHeader.className = 'week-header';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+      const cell = document.createElement('div');
+      cell.className = 'week-day-label';
+      cell.textContent = d;
+      weekHeader.appendChild(cell);
+    });
+    section.appendChild(weekHeader);
+
+    const firstDay = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1);
+    const lastDay = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+
+    let weekRow = document.createElement('div');
+    weekRow.className = 'week-row';
+
+    // Empty cells before first day
+    for (let i = 0; i < firstDay.getDay(); i++) {
+      const empty = document.createElement('div');
+      empty.className = 'day-cell empty';
+      weekRow.appendChild(empty);
+    }
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const date = new Date(monthStart.getFullYear(), monthStart.getMonth(), d);
+      const dow = date.getDay();
+      const data = getDayData(date);
+      const isToday = date.toDateString() === new Date().toDateString();
+      const isRace = date.getTime() === RACE.getTime();
+
+      const cell = document.createElement('div');
+      cell.className = 'day-cell' + (isToday ? ' today' : '') + (isRace ? ' race-day' : '');
+      if (!data) cell.style.opacity = '0.4';
+
+      const numEl = document.createElement('div');
+      numEl.className = 'day-num';
+      numEl.textContent = d;
+      cell.appendChild(numEl);
+
+      const tags = document.createElement('div');
+      tags.className = 'day-tags';
+
+      if (data) {
+        if (isRace) {
+          const t = document.createElement('div');
+          t.className = 'tag tag-race';
+          t.textContent = '🏁 RACE';
+          tags.appendChild(t);
+        } else {
+          if (data.run) {
+            const t = document.createElement('div');
+            t.className = 'tag tag-run';
+            t.textContent = data.run.label.length > 14 ? data.run.label.substring(0,13)+'…' : data.run.label;
+            tags.appendChild(t);
+          }
+          if (data.lift !== 'Rest') {
+            const t = document.createElement('div');
+            t.className = 'tag tag-lift';
+            t.textContent = data.lift;
+            tags.appendChild(t);
+          } else {
+            const t = document.createElement('div');
+            t.className = 'tag tag-rest';
+            t.textContent = 'Rest';
+            tags.appendChild(t);
+          }
+          const ts = document.createElement('div');
+          ts.className = 'tag tag-stretch';
+          ts.textContent = 'Stretch';
+          tags.appendChild(ts);
+        }
+      }
+
+      cell.appendChild(tags);
+
+      cell.addEventListener('click', () => {
+        document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
+        cell.classList.add('selected');
+        document.getElementById('detail-content').innerHTML = renderDetail(date);
+        document.getElementById('detail-panel').classList.add('open');
+      });
+
+      weekRow.appendChild(cell);
+
+      if (dow === 6) {
+        section.appendChild(weekRow);
+        weekRow = document.createElement('div');
+        weekRow.className = 'week-row';
+      }
+    }
+
+    // Fill remaining
+    const lastDow = lastDay.getDay();
+    if (lastDow !== 6) {
+      for (let i = lastDow + 1; i <= 6; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day-cell empty';
+        weekRow.appendChild(empty);
+      }
+      section.appendChild(weekRow);
+    }
+
+    cal.appendChild(section);
+  });
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+// Countdown — live date
+function updateCountdown() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = Math.ceil((RACE - today) / (24*3600*1000));
+  document.getElementById('countdown-num').textContent = diff > 0 ? diff : 0;
+}
+
+// Auto-open today on load
+function openToday() {
+  const todayCell = document.querySelector('.day-cell.today');
+  if (todayCell) {
+    todayCell.click();
+    setTimeout(() => todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  }
+}
+
+// Hide header on scroll down, show on scroll up (mobile)
+let lastScrollY = 0;
+window.addEventListener('scroll', () => {
+  const header = document.querySelector('header');
+  const currentY = window.scrollY;
+  if (currentY > lastScrollY && currentY > 60) {
+    header.classList.add('hide');
+  } else {
+    header.classList.remove('hide');
+  }
+  lastScrollY = currentY;
+}, { passive: true });
+
+buildCalendar();
+updateCountdown();
+openToday();
+</script>
+</body>
+</html>
