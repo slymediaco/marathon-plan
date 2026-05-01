@@ -37,21 +37,7 @@
     color: var(--text);
     font-family: var(--sans);
     min-height: 100vh;
-    font-size: 14px;
-  }
-
-  header {
-    padding: 24px 28px 0;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-    transition: transform 0.25s ease;
-  }
-
-  header.hide {
-    transform: translateY(-100%);
+    font-size: 16px;
   }
 
   .header-top {
@@ -397,14 +383,14 @@
 
   @media (max-width: 700px) {
     .main { grid-template-columns: 1fr; }
-    .detail-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 60vh; top: auto; border-left: none; border-top: 1px solid var(--border); z-index: 200; background: #ffffff; display: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.12); border-radius: 16px 16px 0 0; }
+    .detail-panel { position: fixed; bottom: 0; left: 0; right: 0; height: 38vh; top: auto; border-left: none; border-top: 1px solid var(--border); z-index: 200; background: #ffffff; display: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.12); border-radius: 16px 16px 0 0; }
     .detail-panel.open { display: block; }
     .close-btn { display: flex; }
-    .header-top { flex-direction: row; align-items: center; }
-    h1 { font-size: 16px; }
-    .subtitle { font-size: 10px; }
-    .countdown { padding: 6px 12px; }
-    .countdown span { font-size: 18px; }
+    .calendar-grid { padding-bottom: 42vh; }
+    .tag { font-size: 11px; }
+    .day-num { font-size: 13px; }
+    .week-day-label { font-size: 12px; }
+    .legend-item { font-size: 13px; }
   }
 
   .close-btn {
@@ -421,7 +407,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .phase-bar {
@@ -439,19 +425,7 @@
 </head>
 <body>
 
-<header>
-  <div class="header-top">
-    <div>
-      <h1>Marathon Training Calendar</h1>
-      <div class="subtitle">Apr 29 – Oct 18, 2026 · Toronto Waterfront · Target: 4:15–4:30</div>
-    </div>
-    <div class="countdown">
-      <span id="countdown-num">171</span>
-      days to race
-    </div>
-  </div>
-  <nav id="month-nav"></nav>
-</header>
+
 
 <div class="phase-bar">
   <div class="phase-segment" style="background:#1D9E75;" title="Base Rebuild"></div>
@@ -774,7 +748,7 @@ function renderDetail(date) {
 // Build calendar
 function buildCalendar() {
   const cal = document.getElementById('cal');
-  const nav = document.getElementById('month-nav');
+  const nav = { appendChild: () => {} }; // header removed
 
   const months = [];
   let cur = new Date(2026, 3, 1); // April
@@ -933,19 +907,6 @@ function openToday() {
     setTimeout(() => todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
   }
 }
-
-// Hide header on scroll down, show on scroll up (mobile)
-let lastScrollY = 0;
-window.addEventListener('scroll', () => {
-  const header = document.querySelector('header');
-  const currentY = window.scrollY;
-  if (currentY > lastScrollY && currentY > 60) {
-    header.classList.add('hide');
-  } else {
-    header.classList.remove('hide');
-  }
-  lastScrollY = currentY;
-}, { passive: true });
 
 buildCalendar();
 updateCountdown();
