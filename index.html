@@ -468,7 +468,7 @@
 
 <script>
 const START = new Date(2026, 3, 29); // April 29
-const RACE = new Date(2026, 9, 18);  // October 18
+const RACE = new Date(2026, 9, 25);  // October 25 — Niagara Falls Marathon
 
 // Training week starts Monday April 27 (so April 29 = Wed of week 1)
 // We'll treat the week number as weeks since start
@@ -592,27 +592,77 @@ function getRunColor(type) {
 
 const NUTRITION = {
   preRun: [
-    'Banana or oatmeal (30–60 min before)',
-    'Toast with peanut butter',
-    '500mL water on waking'
+    '500mL water immediately on waking',
+    'Banana or oatmeal 30–60 min before run',
+    'Toast with peanut butter if longer run',
   ],
-  duringShort: ['Water sips if needed', 'No fuel needed under 60 min'],
-  duringLong: ['Dates every 30 min', 'Fruit gummies every 30 min', 'Gel every 30 min if 2h+', '100–200mL water every 15 min'],
-  postRun: ['Carbs + protein within 30 min (3:1 ratio)', 'Pasta + chicken, salmon + rice, or yogurt + granola', '1L water with electrolytes'],
-  daily: ['3L water daily goal', 'Electrolytes on long run days'],
+  duringShort: ['Water sips if warm out', 'No fuel needed under 60 min'],
+  duringLong: ['Dates or fruit gummies every 30 min', 'Gel every 40–45 min if running 2h+', '100–200mL water every 15 min', 'Electrolytes in water on runs over 90 min'],
+  postRun: ['Within 30 min: carbs + protein 3:1 ratio', 'Pasta + chicken, salmon + rice, or yogurt + granola', '500mL–1L water with electrolytes'],
+  daily: ['3L water daily goal', 'Electrolytes added on hard/long run days'],
 };
 
+// Optimized stretching for hip flexor + ankle/foot pain
 const STRETCHING = {
-  daily: ['Couch stretch 2 min/side ⭐', '90/90 hip stretch 2 min/side', 'Standing hip flexor lunge 90 sec/side', 'Standing calf stretch 30 sec/side', 'Standing quad stretch 30 sec/side', 'Seated butterfly 30 sec', 'Seated hamstring 30 sec/side', 'Figure 4 glute 30 sec/side', 'Clams 15 each side', 'Glute bridge holds 3×10'],
-  preRun: ['Leg swings front/back 15 each', 'Leg swings side/side 15 each', 'Toy soldiers 10 each', 'High knees 30 sec', 'Butt kicks 30 sec', 'Lunges with rotation 10 each', 'Squats 15 reps', 'Toe hops 30 sec', 'Calf raises 15 reps', 'Ankle circles 15 each', 'Gate openers 15 each', 'Gate closers 15 each', 'Glute bridges 15 reps', 'Ab crunches 15 reps'],
-  postRun: ['Slow jog 5 min', 'Full daily stretching routine', 'Foam roll: hamstrings, calves, glutes, quads, IT band'],
-  foam: ['Hamstrings', 'Calves', 'Glutes', 'Quads', 'IT band'],
+  // Morning activation — wakes up glutes, loosens hips and ankles before anything else
+  morning: [
+    'Couch stretch 2 min/side ⭐ (hip flexors)',
+    '90/90 hip stretch 2 min/side (psoas + rotators)',
+    'Standing hip flexor lunge 60 sec/side — tuck pelvis under',
+    'Glute bridge holds 3×12 — squeeze hard at top (activates glutes, releases hip flexors)',
+    'Seated calf stretch 60 sec/side — towel around foot, pull toes back (Achilles + plantar fascia)',
+    'Ankle circles 15 each direction each foot (joint mobility)',
+    'Plantar fascia roll — roll bottom of foot on a tennis/golf ball 60 sec/side ⭐',
+    'Toe spreads 10 reps — spread toes as wide as possible, hold 3 sec (foot strength)',
+  ],
+  // Dynamic warmup before every run
+  preRun: [
+    'Ankle circles 10 each direction each foot',
+    'Calf raises slow 15 reps — full range (Achilles warmup)',
+    'Toe hops 20 sec — small quick hops on balls of feet (wakes up plantar fascia)',
+    'Leg swings front/back 15 each (hip flexor range)',
+    'Leg swings side/side 15 each (hip abductors)',
+    'Gate openers 10 each (hip external rotation)',
+    'Glute bridges 15 reps (activate glutes before run)',
+    'High knees 20 sec',
+    'Butt kicks 20 sec',
+    'Lunges with rotation 8 each side',
+  ],
+  // Post-run cooldown — do immediately after stopping
+  postRun: [
+    'Walk 3–5 min to bring heart rate down',
+    'Standing calf stretch 60 sec/side against wall — straight leg then bent knee (hits both heads)',
+    'Seated hamstring stretch 45 sec/side',
+    'Figure 4 glute stretch 45 sec/side (relieves hip compression)',
+    'Couch stretch 90 sec/side ⭐ (most important post-run hip flexor release)',
+    'Foam roll calves 60 sec/side — go slow, pause on tight spots',
+    'Foam roll IT band 60 sec/side',
+    'Foam roll glutes 60 sec/side',
+    'Plantar fascia roll (tennis ball) 60 sec/side ⭐',
+  ],
+  // Evening — do before bed every single night
+  evening: [
+    'Couch stretch 90 sec/side ⭐',
+    '90/90 hip stretch 90 sec/side',
+    'Seated calf stretch 60 sec/side',
+    'Plantar fascia roll 60 sec/side',
+    'Ankle circles 10 each direction each foot',
+  ],
 };
 
 const LIFT_DETAILS = {
   Push: ['Bench press 4×8', 'Incline DB press 3×10', 'Shoulder press 3×10', 'Lateral raises 3×15', 'Tricep pushdowns 3×12', 'Chest flies 3×12'],
-  Pull: ['Deadlift 4×5 (reduce weight on run weeks)', 'Pull-ups 4×8', 'Barbell rows 3×10', 'Face pulls 3×15', 'Bicep curls 3×12', 'Rear delt flies 3×15'],
-  Legs: ['Squat 4×8 (keep moderate — protect hip flexors)', 'Romanian deadlift 3×10', 'Leg press 3×12', 'Walking lunges 3×10 each', 'Leg curls 3×12', 'Hip thrust 3×12 ⭐ key for runners', 'Calf raises 4×15'],
+  Pull: ['Deadlift 4×5 — reduce weight on run weeks, focus on form', 'Pull-ups 4×8', 'Barbell rows 3×10', 'Face pulls 3×15', 'Bicep curls 3×12', 'Rear delt flies 3×15'],
+  Legs: [
+    'Hip thrust 4×12 ⭐ — do this FIRST while fresh (key runner exercise)',
+    'Squat 3×8 — moderate weight only, protect hip flexors',
+    'Romanian deadlift 3×10',
+    'Single-leg press 3×10 each (less hip flexor load than bilateral)',
+    'Leg curls 3×12',
+    'Seated calf raises 4×15 (Achilles health)',
+    'Standing calf raises 4×15',
+    'Tibialis raises 3×15 — stand with heels on step, raise toes up (prevents shin splints + supports ankles) ⭐',
+  ],
   Rest: [],
 };
 
@@ -625,20 +675,67 @@ function renderDetail(date) {
 
   html += `<div class="detail-date">${formatDate(date)}</div>`;
 
+  // Oct 24 = overnight in Niagara (day before race)
+  const NIAGARA_EVE = new Date(2026, 9, 24);
+  if (date.toDateString() === NIAGARA_EVE.toDateString()) {
+    html += `<div class="detail-title">🏨 Travel Day — Niagara Falls</div>`;
+    html += `<div class="detail-block" style="border-left:3px solid var(--race);">
+      <div class="detail-block-title">Race eve — overnight in Niagara</div>
+      <div class="detail-block-body"><ul>
+        <li>Travel to Niagara Falls, check in to hotel</li>
+        <li>No running today — full rest</li>
+        <li>Light walk to loosen legs is fine (20–30 min max)</li>
+        <li>Dinner: simple carb-heavy meal — pasta, rice, bread. Nothing new or heavy.</li>
+        <li>Hydrate well all day: 3L water, electrolytes with dinner</li>
+        <li>Lay out race kit, shoes, gels, watch tonight</li>
+        <li>Set alarm: gun time 8:15am — wake up by 5:00am</li>
+        <li>Lights out by 9:30pm</li>
+        <li>Do full hip flexor + ankle mobility routine before bed</li>
+      </ul></div>
+    </div>`;
+    html += `<div class="detail-block">
+      <div class="detail-block-title">🌙 Pre-bed mobility (10 min)</div>
+      <div class="detail-block-body"><ul>
+        <li>Couch stretch 2 min/side</li>
+        <li>90/90 hip stretch 2 min/side</li>
+        <li>Seated calf stretch 60 sec/side</li>
+        <li>Ankle circles 20 each direction each foot</li>
+        <li>Plantar fascia roll — roll the bottom of each foot on a water bottle 60 sec/side</li>
+      </ul></div>
+    </div>`;
+    return html;
+  }
+
   if (isRaceDay) {
-    html += `<div class="detail-title">🏁 RACE DAY — Toronto Waterfront Marathon</div>`;
+    html += `<div class="detail-title">🏁 RACE DAY — Niagara Falls Marathon</div>`;
     html += `<div class="detail-block" style="border-left: 3px solid var(--race);">
-      <div class="detail-block-title"><span class="pill pill-race">42.2 km</span> Target: 4:15–4:30</div>
-      <div class="detail-block-body">
-        <ul>
-          <li>Wake up 3.5h before gun time</li>
-          <li>Pre-race: oatmeal or banana 2–3h before, 500mL water with electrolytes</li>
-          <li>Pace strategy: first 10 km easy (6:30/km), lock in at 6:10/km km 10–32, push if feeling good</li>
-          <li>Gel every 40–45 min starting at km 14</li>
-          <li>Walk max 10 sec at water stations</li>
-          <li>Do full hip flexor warmup 45 min before start</li>
-        </ul>
-      </div>
+      <div class="detail-block-title"><span class="pill pill-race">42.2 km</span> Gun time 8:15am · Target: 4:15–4:30</div>
+      <div class="detail-block-body"><ul>
+        <li><b>5:00am</b> — Wake up. 500mL water immediately.</li>
+        <li><b>5:15am</b> — Breakfast: oatmeal or banana + toast. Nothing new.</li>
+        <li><b>6:00am</b> — Full hip flexor + ankle warmup (see below)</li>
+        <li><b>7:15am</b> — Arrive start area. Light jog 5 min. Dynamic warmup.</li>
+        <li><b>8:15am</b> — Gun time</li>
+        <li>Km 0–10: run easy at 6:30/km. Ignore the adrenaline.</li>
+        <li>Km 10–32: lock in at 6:10/km. Steady and controlled.</li>
+        <li>Km 32+: if feeling good, start pushing. Glutes will carry you.</li>
+        <li>Gel every 40–45 min starting at km 14. Walk 8 sec max at water stations.</li>
+        <li>If hip flexors tighten: shorten stride, push hips forward, drive with glutes not quads.</li>
+        <li>If ankles/feet feel heavy: focus on landing midfoot, not heel. Lift knees slightly higher.</li>
+      </ul></div>
+    </div>`;
+    html += `<div class="detail-block">
+      <div class="detail-block-title">🌅 Race morning mobility (hotel room, 6:00am)</div>
+      <div class="detail-block-body"><ul>
+        <li>Couch stretch 90 sec/side</li>
+        <li>Standing hip flexor lunge 60 sec/side</li>
+        <li>Ankle circles 15 each direction each foot</li>
+        <li>Calf raises slow 15 reps — wake up the Achilles</li>
+        <li>Glute bridges 15 reps</li>
+        <li>Leg swings front/back 15 each</li>
+        <li>Leg swings side/side 15 each</li>
+        <li>Gate openers 10 each</li>
+      </ul></div>
     </div>`;
     return html;
   }
@@ -647,97 +744,97 @@ function renderDetail(date) {
   html += `<div class="phase-badge" style="background:${phase.color}22;color:${phase.color};border:1px solid ${phase.color}44;">${phase.name}</div>`;
   if (cutback) html += `<div class="week-info">Cutback week — reduce effort, recover, adapt</div><br>`;
 
-  // Morning routine
+  const isLong = run && run.km >= 18;
+  const rcol = run ? getRunColor(run.type) : null;
+
+  // ── 1. MORNING: wake-up water + mobility ──
   html += `<div class="detail-section">
-    <div class="detail-section-title">☀️ Morning</div>
+    <div class="detail-section-title">☀️ Morning — on waking</div>
     <div class="detail-block">
-      <div class="detail-block-title">Wake-up hydration</div>
-      <div class="detail-block-body">500mL plain water immediately on waking</div>
+      <div class="detail-block-title">Hydration</div>
+      <div class="detail-block-body">500mL plain water immediately</div>
     </div>
     <div class="detail-block">
-      <div class="detail-block-title">Daily hip flexor protocol (15 min) ⭐</div>
-      <div class="detail-block-body"><ul>${STRETCHING.daily.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      <div class="detail-block-title">Morning mobility (12 min) ⭐ — hip flexors + ankle/foot</div>
+      <div class="detail-block-body"><ul>${STRETCHING.morning.map(s=>`<li>${s}</li>`).join('')}</ul></div>
     </div>
   </div>`;
 
-  // Run section
+  // ── 2. PRE-RUN: nutrition + warmup + run ──
   if (run) {
-    const isLong = run.km >= 18;
-    const rcol = getRunColor(run.type);
     html += `<div class="detail-section">
-      <div class="detail-section-title">🏃 Run</div>
-      <div class="detail-block" style="border-left: 3px solid ${rcol};">
-        <div class="detail-block-title"><span style="color:${rcol}">${run.label}</span> <span style="font-size:10px;color:var(--muted);font-family:var(--mono);">${run.km} km</span></div>
-        <div class="detail-block-body">
-          ${run.type === 'easy' ? '<b>Pace:</b> 6:45–7:30/km — conversational, could hold a full conversation' : ''}
-          ${run.type === 'long' ? '<b>Pace:</b> 7:00–7:30/km — very comfortable, no ego. Walk breaks totally fine early on.' : ''}
-          ${run.type === 'tempo' ? '<b>Pace:</b> 5:30–5:45/km — comfortably hard, 7/10 effort' : ''}
-          ${run.type === 'intervals' ? '<b>Pace:</b> 5:00–5:15/km per interval — hard effort with 90 sec jog recovery' : ''}
-          ${run.type === 'mp' ? '<b>Pace:</b> 6:02–6:24/km — your goal marathon pace, should feel sustainable' : ''}
-          ${run.type === 'race' ? '<b>Half marathon tune-up race</b> — treat as a long training run, not all out' : ''}
-        </div>
-      </div>
+      <div class="detail-section-title">🍌 Pre-run (30–60 min before)</div>
       <div class="detail-block">
-        <div class="detail-block-title">Pre-run warm-up (10 min)</div>
-        <div class="detail-block-body"><ul>${STRETCHING.preRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
-      </div>
-      <div class="detail-block">
-        <div class="detail-block-title">Pre-run nutrition</div>
+        <div class="detail-block-title">Nutrition</div>
         <div class="detail-block-body"><ul>${NUTRITION.preRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
       </div>
+    </div>`;
+
+    html += `<div class="detail-section">
+      <div class="detail-section-title">🏃 Run</div>
+      <div class="detail-block">
+        <div class="detail-block-title">Dynamic warmup (8 min)</div>
+        <div class="detail-block-body"><ul>${STRETCHING.preRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+      </div>
+      <div class="detail-block" style="border-left: 3px solid ${rcol};">
+        <div class="detail-block-title"><span style="color:${rcol}">${run.label}</span> <span style="font-size:11px;color:var(--muted);"> · ${run.km} km</span></div>
+        <div class="detail-block-body">
+          ${run.type === 'easy' ? '6:45–7:30/km — fully conversational. If your ankles feel heavy, shorten stride and focus on lifting your feet rather than pushing off.' : ''}
+          ${run.type === 'long' ? '7:00–7:30/km — no ego pace. Walk breaks totally fine. If hip flexors tighten: push hips forward and drive with glutes, not quads.' : ''}
+          ${run.type === 'tempo' ? '5:30–5:45/km — comfortably hard, 7/10 effort. Stay tall, engage core.' : ''}
+          ${run.type === 'intervals' ? '5:00–5:15/km per rep — hard effort. 90 sec easy jog between each. Stop if ankles feel sharp.' : ''}
+          ${run.type === 'mp' ? '6:02–6:24/km — goal marathon pace. Should feel controlled and sustainable.' : ''}
+          ${run.type === 'race' ? 'Half marathon tune-up — run at marathon effort, not all out. Treat as a long training run.' : ''}
+        </div>
+      </div>
       ${isLong ? `<div class="detail-block">
-        <div class="detail-block-title">During run (long run fuel)</div>
+        <div class="detail-block-title">During run — fuel</div>
         <div class="detail-block-body"><ul>${NUTRITION.duringLong.map(s=>`<li>${s}</li>`).join('')}</ul></div>
       </div>` : `<div class="detail-block">
         <div class="detail-block-title">During run</div>
         <div class="detail-block-body"><ul>${NUTRITION.duringShort.map(s=>`<li>${s}</li>`).join('')}</ul></div>
       </div>`}
+    </div>`;
+
+    // ── 3. POST-RUN: cooldown + nutrition ──
+    html += `<div class="detail-section">
+      <div class="detail-section-title">✅ Post-run (immediately after)</div>
       <div class="detail-block">
-        <div class="detail-block-title">Post-run cooldown (10 min)</div>
+        <div class="detail-block-title">Cooldown + stretching (12 min)</div>
         <div class="detail-block-body"><ul>${STRETCHING.postRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
       </div>
       <div class="detail-block">
-        <div class="detail-block-title">Post-run nutrition (within 30 min)</div>
+        <div class="detail-block-title">Nutrition (within 30 min)</div>
         <div class="detail-block-body"><ul>${NUTRITION.postRun.map(s=>`<li>${s}</li>`).join('')}</ul></div>
       </div>
     </div>`;
   }
 
-  // Lift section
+  // ── 4. GYM ──
   html += `<div class="detail-section">
-    <div class="detail-section-title">💪 Strength Training</div>`;
-
+    <div class="detail-section-title">💪 Gym — ${run ? 'after run or evening' : 'any time'}</div>`;
   if (lift === 'Rest') {
     html += `<div class="detail-block">
-      <div class="detail-block-title"><span class="pill pill-rest">Rest</span> Full rest day</div>
-      <div class="detail-block-body">Light walk is fine. Focus on extra sleep and nutrition. No gym.</div>
+      <div class="detail-block-title"><span class="pill pill-rest">Rest day</span></div>
+      <div class="detail-block-body">No gym. Light walk fine. Extra sleep and food.</div>
     </div>`;
   } else {
-    const exercises = LIFT_DETAILS[lift];
     html += `<div class="detail-block" style="border-left: 3px solid var(--lift);">
       <div class="detail-block-title"><span class="pill pill-lift">${lift}</span> ${lift} day</div>
-      <div class="detail-block-body">
-        ${run ? '<b>Note:</b> You have a run today — do your run FIRST, lift after (or separate by 4+ hours)<br>' : ''}
-        <ul>${exercises.map(e=>`<li>${e}</li>`).join('')}</ul>
-      </div>
+      <div class="detail-block-body"><ul>${LIFT_DETAILS[lift].map(e=>`<li>${e}</li>`).join('')}</ul></div>
     </div>`;
   }
   html += `</div>`;
 
-  // Evening stretch
+  // ── 5. EVENING: before bed mobility ──
   html += `<div class="detail-section">
-    <div class="detail-section-title">🌙 Evening</div>
+    <div class="detail-section-title">🌙 Before bed — every night</div>
     <div class="detail-block">
-      <div class="detail-block-title">Evening hip flexor stretch (10 min)</div>
-      <div class="detail-block-body">Repeat couch stretch + 90/90 hip stretch. Critical for recovery. Do this every night even if tired.</div>
+      <div class="detail-block-title">Evening mobility (8 min) ⭐</div>
+      <div class="detail-block-body"><ul>${STRETCHING.evening.map(s=>`<li>${s}</li>`).join('')}</ul></div>
     </div>
-  </div>`;
-
-  // Daily nutrition
-  html += `<div class="detail-section">
-    <div class="detail-section-title">💧 Hydration & Nutrition</div>
     <div class="detail-block">
-      <div class="detail-block-title">Daily targets</div>
+      <div class="detail-block-title">Hydration goal</div>
       <div class="detail-block-body"><ul>${NUTRITION.daily.map(s=>`<li>${s}</li>`).join('')}</ul></div>
     </div>
   </div>`;
@@ -752,7 +849,7 @@ function buildCalendar() {
 
   const months = [];
   let cur = new Date(2026, 3, 1); // April
-  while (cur <= new Date(2026, 9, 31)) {
+  while (cur <= new Date(2026, 9, 31)) { // October
     months.push(new Date(cur));
     cur.setMonth(cur.getMonth() + 1);
   }
