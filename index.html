@@ -568,17 +568,107 @@ function getRunInfo(date, week) {
   return Object.keys(runDays).length ? runDays : null;
 }
 
+// ─────────────────────────────────────────────────────────────────
+// REBUILD PLAN — hip flexor recovery + cardio rebuild + trip block
+// Overrides the formula-driven schedule from Aug 5 through Sep 15
+// (the rest of week 15 through the end of week 20). From Sep 16
+// onward the original Taper/Race formulas above resume untouched —
+// they already step the long run down 22 → 16 → 10 km, which lines
+// up well as a taper after the Sep 13 peak long run below.
+// ─────────────────────────────────────────────────────────────────
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function dateKey(date) { return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`; }
+
+const REBUILD_START = new Date(2026, 7, 5);   // Aug 5, 2026
+const REBUILD_END = new Date(2026, 8, 15);    // Sep 15, 2026
+
+const REHAB_COLOR = '#1D9E75';
+const TRAVEL_COLOR = '#0EA5E9';
+const REBUILD_COLOR = '#7F77DD';
+
+const REBUILD_PLAN = {
+  '2026-08-05': { lift: 'Rest', run: null, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR, note: 'Full rest. Yesterday\u2019s interval attempt showed both the hip flexor and the cardio need more time — mobility only today, no running.' },
+  '2026-08-06': { lift: 'Push', run: null, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-07': { lift: 'Pull', run: { type: 'easy', label: 'Easy run 4 km', km: 4, paceNote: '7:45\u20138:15/km \u2014 fully conversational. Walk any time the hip feels tight. Stop completely on any sharp pain.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-08': { lift: 'LegsRehab', run: null, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-09': { lift: 'Rest', run: { type: 'long', label: 'Easy long run 8 km', km: 8, paceNote: '7:30\u20138:00/km. Run-walk is completely fine (e.g. 4 min run / 1 min walk). The goal is time on feet with zero hip pain, not pace.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-10': { lift: 'Push', run: null, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-11': { lift: 'Pull', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:30/km, conversational. No intervals yet \u2014 cardio and hip both still rebuilding.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-12': { lift: 'LegsRehab', run: { type: 'easy', label: 'Easy run 6 km', km: 6, paceNote: '7:15\u20137:30/km. Check in with the hip flexor through the whole run.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-13': { lift: 'Push', run: { type: 'easy', label: 'Easy shakeout 4 km', km: 4, paceNote: 'Whatever feels easy, 7:30/km or slower.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-14': { lift: 'Pull', run: { type: 'easy', label: 'Easy run 4 km', km: 4, paceNote: 'Keep it short and easy \u2014 long flight tomorrow.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
+  '2026-08-15': { lift: 'Travel', run: null, phaseName: 'Travel Day', phaseColor: TRAVEL_COLOR, note: 'Flight to China \u2014 rest completely. Do seated ankle circles and hip flexor stretches during layovers.' },
+  '2026-08-16': { lift: 'Travel', run: { type: 'long', label: 'Long run 16 km \u2014 Chengdu', km: 16, paceNote: '5:30am start. Warm and humid even before dawn (~25\u201326\u00b0C, 75\u201380% humidity) \u2014 trimmed from 30 to 16 km. 7:15\u20137:45/km, run-walk if needed, stop the moment the hip flexor complains. Hydrate heavily.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-17': { lift: 'Travel', run: { type: 'easy', label: 'Recovery run 7 km \u2014 Chengdu', km: 7, paceNote: '5:45am. Legs tired from yesterday plus jetlag \u2014 trimmed from 14 to 7 km. 7:45\u20138:15/km, very easy.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-18': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest day \u2014 sightseeing in Chengdu.' },
+  '2026-08-19': { lift: 'Travel', run: { type: 'easy', label: 'Easy run 8 km \u2014 Lijiang', km: 8, paceNote: '6:30am. Cool morning (~15\u201318\u00b0C) but Lijiang sits at ~2,400m altitude \u2014 it\u2019ll feel harder than the pace suggests. 8:00\u20138:30/km, don\u2019t chase normal paces or HR.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-20': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest \u2014 sightseeing.' },
+  '2026-08-21': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest \u2014 optional easy 20\u201330 min walk only.' },
+  '2026-08-22': { lift: 'Travel', run: { type: 'long', label: 'Long run 14 km \u2014 Chongqing', km: 14, paceNote: '4:30am start, but Chongqing runs hot and humid even before dawn in August (~27\u201328\u00b0C, 75%+ humidity, one of China\u2019s hottest cities) \u2014 trimmed from 21 to 14 km. 7:45\u20138:15/km, run-walk, hydrate and electrolytes heavily, cut it short if you\u2019re overheating.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-23': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest \u2014 recover from the Chongqing heat.' },
+  '2026-08-24': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Travel day toward Japan \u2014 rest.' },
+  '2026-08-25': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest / arrival in Japan.' },
+  '2026-08-26': { lift: 'Travel', run: { type: 'easy', label: 'Easy-moderate run 10 km \u2014 Kyoto', km: 10, paceNote: '6am. Warm and humid (~26\u201327\u00b0C) but manageable at this hour \u2014 kept at the full 10 km. 7:00\u20137:30/km.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-27': { lift: 'Travel', run: { type: 'easy', label: 'Easy run 9 km \u2014 Tokyo', km: 9, paceNote: '8:30am start means real heat and humidity by then (~29\u201330\u00b0C, 70%+ humidity) \u2014 trimmed from 10 to 9 km. 7:30\u20138:00/km, hydrate often.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-28': { lift: 'Travel', run: { type: 'easy', label: 'Easy run 7 km \u2014 Tokyo', km: 7, paceNote: '7am, still warm. 7:00\u20137:15/km, relaxed effort \u2014 kept at the full 7 km.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-29': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest \u2014 sightseeing/shopping in Tokyo.' },
+  '2026-08-30': { lift: 'Travel', run: { type: 'long', label: 'Long run 19 km \u2014 Tokyo', km: 19, paceNote: '8am is properly hot in Tokyo by late August (~30\u00b0C+, 70%+ humidity) \u2014 trimmed from 24 to 19 km. 7:15\u20137:45/km with run-walk, practice race-day fueling.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
+  '2026-08-31': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Flight home \u2014 rest.' },
+  '2026-09-01': { lift: 'Rest', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR, note: 'Jetlag recovery \u2014 mobility only.' },
+  '2026-09-02': { lift: 'Legs', run: { type: 'easy', label: 'Easy run 8 km', km: 8, paceNote: '7:00\u20137:15/km. Hip should be well settled by now \u2014 back to a full Legs day, easing back into squats.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-03': { lift: 'Push', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:15/km recovery jog.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-04': { lift: 'Pull', run: { type: 'tempo', label: 'Easy 6 km + 2 km steady', km: 8, paceNote: 'Warm up 6 km easy at 7:15/km, then 2 km at a steady 6:15/km effort.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-05': { lift: 'Legs', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-06': { lift: 'Rest', run: { type: 'long', label: 'Long run 20 km', km: 20, paceNote: '6:50\u20137:15/km, easy effort. First real long run since the trip \u2014 confidence builder.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-07': { lift: 'Push', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-08': { lift: 'Pull', run: { type: 'intervals', label: 'Intervals 4\u00d7800m', km: 7, paceNote: '5:00\u20135:10/km per rep, 2 min easy jog recovery. Scaled well back from the original 6\u00d71km.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-09': { lift: 'Legs', run: { type: 'easy', label: 'Easy run 8 km', km: 8, paceNote: '6:50\u20137:10/km.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-10': { lift: 'Push', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:15/km recovery.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-11': { lift: 'Pull', run: { type: 'tempo', label: 'Tempo 6 km', km: 9, paceNote: '5:45\u20136:00/km, comfortably hard, with easy warm-up and cool-down.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-12': { lift: 'Legs', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-13': { lift: 'Rest', run: { type: 'long', label: 'Peak long run 26 km', km: 26, paceNote: '6:45\u20137:10/km easy-moderate; if it\u2019s feeling good, finish the last 5 km near goal marathon pace (6:10\u20136:20/km). This is the peak effort of the whole plan \u2014 taper starts right after.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-14': { lift: 'Push', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-15': { lift: 'Pull', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:15/km, shake out the legs \u2014 taper begins tomorrow.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+};
+
+const LEGS_REHAB_DETAILS = [
+  'Hip thrusts 3\u00d715 \u2014 light-moderate load, controlled squeeze at the top, no bouncing',
+  'Glute bridges 3\u00d715',
+  'Clamshells 3\u00d715/side (add a band if you have one)',
+  'Standing banded hip abduction 3\u00d715/side',
+  'Single-leg RDL \u2014 bodyweight or very light, 3\u00d78/side',
+  'Seated calf raises 3\u00d715',
+  'Tibialis raises 3\u00d715',
+  'No squats, no heavy lunges, no deadlifts until the hip flexor is fully pain-free',
+];
+
 function getDayData(date) {
   if (date < START || date > RACE) return null;
   const week = getTrainingWeek(date);
   const dow = date.getDay();
-  const lift = getLiftType(dow);
-  const run = getRunInfo(date, week);
   const isRaceDay = date.getTime() === RACE.getTime();
   const phase = getPhase(week);
+
+  if (date >= REBUILD_START && date <= REBUILD_END) {
+    const override = REBUILD_PLAN[dateKey(date)];
+    if (override) {
+      return {
+        week, dow,
+        lift: override.lift,
+        run: override.run,
+        phase: { name: override.phaseName, color: override.phaseColor },
+        cutback: false,
+        isRaceDay: false,
+        note: override.note || null,
+      };
+    }
+  }
+
+  const lift = getLiftType(dow);
+  const run = getRunInfo(date, week);
   const cutback = [4, 8, 12, 15, 18].includes(week);
 
-  return { week, dow, lift, run, phase, cutback, isRaceDay };
+  return { week, dow, lift, run, phase, cutback, isRaceDay, note: null };
 }
 
 function formatDate(d) {
@@ -664,13 +754,15 @@ const LIFT_DETAILS = {
     'Tibialis raises 3×15 — stand with heels on step, raise toes up (prevents shin splints + supports ankles) ⭐',
   ],
   Rest: [],
+  LegsRehab: LEGS_REHAB_DETAILS,
+  Travel: [],
 };
 
 function renderDetail(date) {
   const data = getDayData(date);
   if (!data) return '<div class="detail-empty"><div>Outside training window</div></div>';
 
-  const { week, dow, lift, run, phase, cutback, isRaceDay } = data;
+  const { week, dow, lift, run, phase, cutback, isRaceDay, note } = data;
   let html = '';
 
   html += `<div class="detail-date">${formatDate(date)}</div>`;
@@ -743,6 +835,7 @@ function renderDetail(date) {
   html += `<div class="detail-title">${cutback ? '⬇️ Cutback week — ' : ''}Week ${week}</div>`;
   html += `<div class="phase-badge" style="background:${phase.color}22;color:${phase.color};border:1px solid ${phase.color}44;">${phase.name}</div>`;
   if (cutback) html += `<div class="week-info">Cutback week — reduce effort, recover, adapt</div><br>`;
+  if (note) html += `<div class="week-info">${note}</div><br>`;
 
   const isLong = run && run.km >= 18;
   const rcol = run ? getRunColor(run.type) : null;
@@ -779,12 +872,13 @@ function renderDetail(date) {
       <div class="detail-block" style="border-left: 3px solid ${rcol};">
         <div class="detail-block-title"><span style="color:${rcol}">${run.label}</span> <span style="font-size:11px;color:var(--muted);"> · ${run.km} km</span></div>
         <div class="detail-block-body">
-          ${run.type === 'easy' ? '6:45–7:30/km — fully conversational. If your ankles feel heavy, shorten stride and focus on lifting your feet rather than pushing off.' : ''}
-          ${run.type === 'long' ? '7:00–7:30/km — no ego pace. Walk breaks totally fine. If hip flexors tighten: push hips forward and drive with glutes, not quads.' : ''}
-          ${run.type === 'tempo' ? '5:30–5:45/km — comfortably hard, 7/10 effort. Stay tall, engage core.' : ''}
-          ${run.type === 'intervals' ? '5:00–5:15/km per rep — hard effort. 90 sec easy jog between each. Stop if ankles feel sharp.' : ''}
-          ${run.type === 'mp' ? '6:02–6:24/km — goal marathon pace. Should feel controlled and sustainable.' : ''}
-          ${run.type === 'race' ? 'Half marathon tune-up — run at marathon effort, not all out. Treat as a long training run.' : ''}
+          ${run.paceNote ? run.paceNote : ''}
+          ${!run.paceNote && run.type === 'easy' ? '6:45–7:30/km — fully conversational. If your ankles feel heavy, shorten stride and focus on lifting your feet rather than pushing off.' : ''}
+          ${!run.paceNote && run.type === 'long' ? '7:00–7:30/km — no ego pace. Walk breaks totally fine. If hip flexors tighten: push hips forward and drive with glutes, not quads.' : ''}
+          ${!run.paceNote && run.type === 'tempo' ? '5:30–5:45/km — comfortably hard, 7/10 effort. Stay tall, engage core.' : ''}
+          ${!run.paceNote && run.type === 'intervals' ? '5:00–5:15/km per rep — hard effort. 90 sec easy jog between each. Stop if ankles feel sharp.' : ''}
+          ${!run.paceNote && run.type === 'mp' ? '6:02–6:24/km — goal marathon pace. Should feel controlled and sustainable.' : ''}
+          ${!run.paceNote && run.type === 'race' ? 'Half marathon tune-up — run at marathon effort, not all out. Treat as a long training run.' : ''}
         </div>
       </div>
       ${isLong ? `<div class="detail-block">
@@ -818,9 +912,14 @@ function renderDetail(date) {
       <div class="detail-block-title"><span class="pill pill-rest">Rest day</span></div>
       <div class="detail-block-body">No gym. Light walk fine. Extra sleep and food.</div>
     </div>`;
+  } else if (lift === 'Travel') {
+    html += `<div class="detail-block">
+      <div class="detail-block-title"><span class="pill pill-rest">Travel</span></div>
+      <div class="detail-block-body">No gym — traveling. Stick to the mobility routine below and keep the runs as scheduled.</div>
+    </div>`;
   } else {
     html += `<div class="detail-block" style="border-left: 3px solid var(--lift);">
-      <div class="detail-block-title"><span class="pill pill-lift">${lift}</span> ${lift} day</div>
+      <div class="detail-block-title"><span class="pill pill-lift">${lift === 'LegsRehab' ? 'Legs (hip-safe)' : lift}</span> ${lift === 'LegsRehab' ? 'Hip-safe legs' : lift} day</div>
       <div class="detail-block-body"><ul>${LIFT_DETAILS[lift].map(e=>`<li>${e}</li>`).join('')}</ul></div>
     </div>`;
   }
@@ -933,15 +1032,20 @@ function buildCalendar() {
             t.textContent = data.run.label.length > 14 ? data.run.label.substring(0,13)+'…' : data.run.label;
             tags.appendChild(t);
           }
-          if (data.lift !== 'Rest') {
+          if (data.lift !== 'Rest' && data.lift !== 'Travel' && data.lift !== 'LegsRehab') {
             const t = document.createElement('div');
             t.className = 'tag tag-lift';
             t.textContent = data.lift;
             tags.appendChild(t);
+          } else if (data.lift === 'LegsRehab') {
+            const t = document.createElement('div');
+            t.className = 'tag tag-lift';
+            t.textContent = 'Legs (safe)';
+            tags.appendChild(t);
           } else {
             const t = document.createElement('div');
             t.className = 'tag tag-rest';
-            t.textContent = 'Rest';
+            t.textContent = data.lift === 'Travel' ? 'Travel' : 'Rest';
             tags.appendChild(t);
           }
           const ts = document.createElement('div');
