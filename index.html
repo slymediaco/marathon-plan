@@ -580,13 +580,14 @@ function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 function dateKey(date) { return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`; }
 
 const REBUILD_START = new Date(2026, 7, 5);   // Aug 5, 2026
-const REBUILD_END = new Date(2026, 8, 15);    // Sep 15, 2026
+const REBUILD_END = new Date(2026, 9, 24);    // Oct 24, 2026 — explicit recovery/race-prep schedule
 
 const REHAB_COLOR = '#1D9E75';
 const TRAVEL_COLOR = '#0EA5E9';
 const REBUILD_COLOR = '#7F77DD';
 
 const REBUILD_PLAN = {
+
   '2026-08-05': { lift: 'Rest', run: null, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR, note: 'Full rest. Yesterday\u2019s interval attempt showed both the hip flexor and the cardio need more time — mobility only today, no running.' },
   '2026-08-06': { lift: 'Push', run: null, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
   '2026-08-07': { lift: 'Pull', run: { type: 'easy', label: 'Easy run 4 km', km: 4, paceNote: '7:45\u20138:15/km \u2014 fully conversational. Walk any time the hip feels tight. Stop completely on any sharp pain.' }, phaseName: 'Hip Flexor Rehab', phaseColor: REHAB_COLOR },
@@ -614,32 +615,94 @@ const REBUILD_PLAN = {
   '2026-08-29': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Rest \u2014 sightseeing/shopping in Tokyo.' },
   '2026-08-30': { lift: 'Travel', run: { type: 'long', label: 'Long run 19 km \u2014 Tokyo', km: 19, paceNote: '8am is properly hot in Tokyo by late August (~30\u00b0C+, 70%+ humidity) \u2014 trimmed from 24 to 19 km. 7:15\u20137:45/km with run-walk, practice race-day fueling.' }, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR },
   '2026-08-31': { lift: 'Travel', run: null, phaseName: 'Travel Block', phaseColor: TRAVEL_COLOR, note: 'Flight home \u2014 rest.' },
-  '2026-09-01': { lift: 'Rest', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR, note: 'Jetlag recovery \u2014 mobility only.' },
-  '2026-09-02': { lift: 'Legs', run: { type: 'easy', label: 'Easy run 8 km', km: 8, paceNote: '7:00\u20137:15/km. Hip should be well settled by now \u2014 back to a full Legs day, easing back into squats.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-03': { lift: 'Push', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:15/km recovery jog.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-04': { lift: 'Pull', run: { type: 'tempo', label: 'Easy 6 km + 2 km steady', km: 8, paceNote: 'Warm up 6 km easy at 7:15/km, then 2 km at a steady 6:15/km effort.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-05': { lift: 'Legs', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-06': { lift: 'Rest', run: { type: 'long', label: 'Long run 20 km', km: 20, paceNote: '6:50\u20137:15/km, easy effort. First real long run since the trip \u2014 confidence builder.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+
+  '2026-09-01': { lift: 'Pull', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:30–8:00/km — very easy return run. Run/walk is fine. The goal is to see how the hip flexors and knees respond, not fitness.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-02': { lift: 'LegsSafe', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-03': { lift: 'Push', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:30–8:00/km — conversational and relaxed. No pace pushing.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-04': { lift: 'Pull', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-05': { lift: 'LegsLight', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-06': { lift: 'Rest', run: { type: 'long', label: 'Long run 8 km', km: 8, paceNote: '7:30–8:00/km — easy. Run-walk is encouraged. Stop if hip or knee pain becomes more than mild or changes your stride.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
   '2026-09-07': { lift: 'Push', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-08': { lift: 'Pull', run: { type: 'intervals', label: 'Intervals 4\u00d7800m', km: 7, paceNote: '5:00\u20135:10/km per rep, 2 min easy jog recovery. Scaled well back from the original 6\u00d71km.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-09': { lift: 'Legs', run: { type: 'easy', label: 'Easy run 8 km', km: 8, paceNote: '6:50\u20137:10/km.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-10': { lift: 'Push', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:15/km recovery.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-11': { lift: 'Pull', run: { type: 'tempo', label: 'Tempo 6 km', km: 9, paceNote: '5:45\u20136:00/km, comfortably hard, with easy warm-up and cool-down.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-12': { lift: 'Legs', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-13': { lift: 'Rest', run: { type: 'long', label: 'Peak long run 26 km', km: 26, paceNote: '6:45\u20137:10/km easy-moderate; if it\u2019s feeling good, finish the last 5 km near goal marathon pace (6:10\u20136:20/km). This is the peak effort of the whole plan \u2014 taper starts right after.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-14': { lift: 'Push', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
-  '2026-09-15': { lift: 'Pull', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:15/km, shake out the legs \u2014 taper begins tomorrow.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-08': { lift: 'Pull', run: { type: 'easy', label: 'Easy run 5 km', km: 5, paceNote: '7:30–8:00/km — easy recovery effort.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-09': { lift: 'LegsSafe', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-10': { lift: 'Push', run: { type: 'easy', label: 'Easy run 6 km', km: 6, paceNote: '7:20–7:50/km — still easy; no speedwork yet.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-11': { lift: 'Pull', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-12': { lift: 'LegsLight', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-13': { lift: 'Rest', run: { type: 'long', label: 'Long run 10 km', km: 10, paceNote: '7:20–7:50/km — easy, controlled long run. Practice relaxed cadence and short stride.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-14': { lift: 'Push', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:30–8:00/km — only if the Sunday 10 km caused no increase in hip/knee symptoms.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-15': { lift: 'Pull', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-16': { lift: 'LegsSafe', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-17': { lift: 'Push', run: { type: 'easy', label: 'Easy run 7 km', km: 7, paceNote: '7:15–7:45/km — easy aerobic running; still no tempo or intervals.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-18': { lift: 'Pull', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-19': { lift: 'LegsLight', run: null, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-20': { lift: 'Rest', run: { type: 'long', label: 'Long run 13 km', km: 13, paceNote: '7:15–7:45/km — easy run-walk. Fuel/hydrate as needed; this is about time on feet.' }, phaseName: 'Rebuild', phaseColor: REBUILD_COLOR },
+  '2026-09-21': { lift: 'Push', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:30–8:00/km — only if the 13 km long run leaves the hips and knees normal the next morning.' }, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-22': { lift: 'Pull', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-23': { lift: 'LegsSafe', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-24': { lift: 'Push', run: { type: 'easy', label: 'Easy run 7 km', km: 7, paceNote: '7:10–7:40/km — relaxed aerobic effort.' }, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-25': { lift: 'Pull', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-26': { lift: 'LegsLight', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-27': { lift: 'Rest', run: { type: 'long', label: 'Long run 16 km', km: 16, paceNote: '7:10–7:40/km — easy. Run-walk is completely acceptable. Practice race-day fueling.' }, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-28': { lift: 'Push', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:30–8:00/km — relaxed; skip if Sunday caused lingering pain.' }, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-29': { lift: 'Pull', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-09-30': { lift: 'LegsSafe', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-10-01': { lift: 'Push', run: { type: 'easy', label: 'Easy run 8 km', km: 8, paceNote: '7:05–7:35/km — conversational. No need for marathon pace work.' }, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-10-02': { lift: 'Pull', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-10-03': { lift: 'LegsLight', run: null, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-10-04': { lift: 'Rest', run: { type: 'long', label: 'Long run 19 km', km: 19, paceNote: '7:05–7:35/km — easy/moderate, with planned walk breaks if useful. This is the first substantial long run.' }, phaseName: 'Endurance', phaseColor: REBUILD_COLOR },
+  '2026-10-05': { lift: 'Push', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:30–8:00/km — gentle recovery; skip if not recovered.' }, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-06': { lift: 'Pull', run: null, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-07': { lift: 'LegsSafe', run: null, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-08': { lift: 'Push', run: { type: 'easy', label: 'Easy run 8 km', km: 8, paceNote: '7:05–7:35/km — relaxed aerobic running.' }, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-09': { lift: 'Pull', run: null, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-10': { lift: 'LegsLight', run: null, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-11': { lift: 'Rest', run: { type: 'long', label: 'Long run 22 km', km: 22, paceNote: '7:05–7:35/km — easy, not a race. Use run-walk from the start if that keeps the hips/knees comfortable. Practice the exact fueling you will use on race day.' }, phaseName: 'Peak/Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-12': { lift: 'Push', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:30–8:00/km — only if fully recovered from Sunday.' }, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-13': { lift: 'Pull', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-14': { lift: 'LegsSafe', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-15': { lift: 'Push', run: { type: 'easy', label: 'Easy run 6 km', km: 6, paceNote: '7:15–7:45/km — taper-oriented easy running.' }, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-16': { lift: 'Pull', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-17': { lift: 'LegsLight', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-18': { lift: 'Rest', run: { type: 'long', label: 'Long run 14 km', km: 14, paceNote: '7:10–7:40/km — final long run, deliberately reduced. Finish feeling like you could keep going.' }, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-19': { lift: 'Push', run: { type: 'easy', label: 'Easy recovery run 5 km', km: 5, paceNote: '7:30–8:00/km — gentle shakeout.' }, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-20': { lift: 'Pull', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-21': { lift: 'LegsSafe', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-22': { lift: 'Push', run: { type: 'easy', label: 'Easy run 4 km', km: 4, paceNote: 'Very easy, 7:30/km or slower. No strides, no speedwork.' }, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-23': { lift: 'Pull', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
+  '2026-10-24': { lift: 'LegsLight', run: null, phaseName: 'Taper', phaseColor: REBUILD_COLOR },
 };
 
 const LEGS_REHAB_DETAILS = [
-  'Hip thrusts 3\u00d715 \u2014 light-moderate load, controlled squeeze at the top, no bouncing',
-  'Glute bridges 3\u00d715',
-  'Clamshells 3\u00d715/side (add a band if you have one)',
-  'Standing banded hip abduction 3\u00d715/side',
-  'Single-leg RDL \u2014 bodyweight or very light, 3\u00d78/side',
-  'Seated calf raises 3\u00d715',
-  'Tibialis raises 3\u00d715',
-  'No squats, no heavy lunges, no deadlifts until the hip flexor is fully pain-free',
+  'Hip thrusts 3×12–15 — light/moderate, only if completely pain-free; controlled squeeze, no bouncing',
+  'Glute bridges 2×15',
+  'Hip abduction 2–3×15/side — controlled',
+  'Hip adduction 2–3×15/side — controlled and pain-free',
+  'Lying hamstring curls 3×12–15',
+  'Seated calf raises 3×15',
+  'Tibialis raises 2×15',
+  'No leg press, quad extensions, RDLs, heavy squats, or heavy lunges while they reproduce your knee/hip/back pain',
+];
+
+const LEGS_SAFE_DETAILS = [
+  'Hip thrusts 3×10–12 — light/moderate, only if pain-free',
+  'Hip abduction 3×15/side',
+  'Hip adduction 3×15/side',
+  'Lying hamstring curls 3×12–15',
+  'Seated calf raises 3×15',
+  'Tibialis raises 2×15',
+  'Keep 2–3 reps in reserve — this is runner-support work, not a max-strength session',
+  'No leg press, quad extensions, RDLs, heavy squats, or heavy lunges',
+];
+
+const LEGS_LIGHT_DETAILS = [
+  'Hip thrusts 2×10 — light, only if completely pain-free',
+  'Hip abduction 2×15/side',
+  'Hip adduction 2×15/side',
+  'Lying hamstring curls 2×12',
+  'Seated calf raises 2×15',
+  'Tibialis raises 2×15',
+  'Keep everything easy — Saturday is the day before the long run',
+  'No leg press, quad extensions, RDLs, heavy squats, or heavy lunges',
 ];
 
 function getDayData(date) {
@@ -682,9 +745,14 @@ function getRunColor(type) {
 
 const NUTRITION = {
   preRun: [
-    '500mL water immediately on waking',
-    'Banana or oatmeal 30–60 min before run',
-    'Toast with peanut butter if longer run',
+    'Ankle circles 10 each direction each foot',
+    'Slow seated or standing calf raises 15 reps — pain-free range',
+    'Leg swings front/back 10 each — small, controlled range',
+    'Leg swings side/side 10 each — small, controlled range',
+    'Gate openers 8 each — controlled, no forcing the hip',
+    'Glute bridges 12 reps — squeeze gently at the top',
+    'Mini-squats 8 reps — shallow and pain-free; skip if the knees hurt',
+    'Walk/jog easily for the first 3–5 minutes before settling into pace',
   ],
   duringShort: ['Water sips if warm out', 'No fuel needed under 60 min'],
   duringLong: ['Dates or fruit gummies every 30 min', 'Gel every 40–45 min if running 2h+', '100–200mL water every 15 min', 'Electrolytes in water on runs over 90 min'],
@@ -724,7 +792,7 @@ const STRETCHING = {
     'Standing calf stretch 60 sec/side against wall — straight leg then bent knee (hits both heads)',
     'Seated hamstring stretch 45 sec/side',
     'Figure 4 glute stretch 45 sec/side (relieves hip compression)',
-    'Couch stretch 90 sec/side ⭐ (most important post-run hip flexor release)',
+    'Gentle hip-flexor stretch 30–45 sec/side — do not force the range or arch the lower back',
     'Foam roll calves 60 sec/side — go slow, pause on tight spots',
     'Foam roll IT band 60 sec/side',
     'Foam roll glutes 60 sec/side',
@@ -732,7 +800,7 @@ const STRETCHING = {
   ],
   // Evening — do before bed every single night
   evening: [
-    'Couch stretch 90 sec/side ⭐',
+    'Gentle hip-flexor stretch 30–45 sec/side — pain-free only',
     '90/90 hip stretch 90 sec/side',
     'Seated calf stretch 60 sec/side',
     'Plantar fascia roll 60 sec/side',
@@ -755,6 +823,8 @@ const LIFT_DETAILS = {
   ],
   Rest: [],
   LegsRehab: LEGS_REHAB_DETAILS,
+  LegsSafe: LEGS_SAFE_DETAILS,
+  LegsLight: LEGS_LIGHT_DETAILS,
   Travel: [],
 };
 
@@ -819,7 +889,7 @@ function renderDetail(date) {
     html += `<div class="detail-block">
       <div class="detail-block-title">🌅 Race morning mobility (hotel room, 6:00am)</div>
       <div class="detail-block-body"><ul>
-        <li>Couch stretch 90 sec/side</li>
+        <li>Gentle hip-flexor stretch 30–45 sec/side — pain-free only</li>
         <li>Standing hip flexor lunge 60 sec/side</li>
         <li>Ankle circles 15 each direction each foot</li>
         <li>Calf raises slow 15 reps — wake up the Achilles</li>
@@ -919,7 +989,7 @@ function renderDetail(date) {
     </div>`;
   } else {
     html += `<div class="detail-block" style="border-left: 3px solid var(--lift);">
-      <div class="detail-block-title"><span class="pill pill-lift">${lift === 'LegsRehab' ? 'Legs (hip-safe)' : lift}</span> ${lift === 'LegsRehab' ? 'Hip-safe legs' : lift} day</div>
+      <div class="detail-block-title"><span class="pill pill-lift">${lift === 'LegsRehab' || lift === 'LegsSafe' || lift === 'LegsLight' ? 'Legs (hip/knee-safe)' : lift}</span> ${lift === 'LegsRehab' || lift === 'LegsSafe' || lift === 'LegsLight' ? (lift === 'LegsLight' ? 'Light legs' : 'Hip/knee-safe legs') : lift} day</div>
       <div class="detail-block-body"><ul>${LIFT_DETAILS[lift].map(e=>`<li>${e}</li>`).join('')}</ul></div>
     </div>`;
   }
@@ -1032,12 +1102,12 @@ function buildCalendar() {
             t.textContent = data.run.label.length > 14 ? data.run.label.substring(0,13)+'…' : data.run.label;
             tags.appendChild(t);
           }
-          if (data.lift !== 'Rest' && data.lift !== 'Travel' && data.lift !== 'LegsRehab') {
+          if (data.lift !== 'Rest' && data.lift !== 'Travel' && data.lift !== 'LegsRehab' && data.lift !== 'LegsSafe' && data.lift !== 'LegsLight') {
             const t = document.createElement('div');
             t.className = 'tag tag-lift';
             t.textContent = data.lift;
             tags.appendChild(t);
-          } else if (data.lift === 'LegsRehab') {
+          } else if (data.lift === 'LegsRehab' || data.lift === 'LegsSafe' || data.lift === 'LegsLight') {
             const t = document.createElement('div');
             t.className = 'tag tag-lift';
             t.textContent = 'Legs (safe)';
@@ -1097,7 +1167,8 @@ function updateCountdown() {
   const today = new Date();
   today.setHours(0,0,0,0);
   const diff = Math.ceil((RACE - today) / (24*3600*1000));
-  document.getElementById('countdown-num').textContent = diff > 0 ? diff : 0;
+  const countdownEl = document.getElementById('countdown-num');
+  if (countdownEl) countdownEl.textContent = diff > 0 ? diff : 0;
 }
 
 // Auto-open today on load
